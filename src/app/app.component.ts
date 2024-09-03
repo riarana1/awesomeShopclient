@@ -1,10 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import * as AuthActions from './store/auth/auth.actions';
+import { Store } from '@ngrx/store';
+import * as fromApp from './store/app.reducers';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
-  title = 'client';
+export class AppComponent implements OnInit {
+  constructor(private store: Store<fromApp.AppState>) {}
+
+  ngOnInit(): void {
+    this.store.dispatch(new AuthActions.CheckIfLoggedIn());
+  }
+
+  onActivate($event: any) {
+    window.scroll(0, 0);
+  }
 }
