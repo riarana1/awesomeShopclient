@@ -2,6 +2,7 @@ import { User } from './../store/model';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { config } from '../../config/local';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class AccountService {
@@ -72,7 +73,7 @@ export class AccountService {
     });
   }
 
-  getVerificationStatus() {
-    return this.httpClient.get(this.url + '/status');
+  getVerificationStatus(): Observable<boolean> {
+    return this.httpClient.get<boolean>(this.url + '/status');
   }
 }

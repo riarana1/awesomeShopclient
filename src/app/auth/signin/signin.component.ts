@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import * as fromApp from '../../store/app.reducers';
-import * as AuthActions from '../../store/auth/auth.actions';
+import { AuthActions } from '../../store/auth/auth.actions';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -37,7 +37,7 @@ export class SigninComponent implements OnInit {
 
   onSubmitted() {
     this.store.dispatch(
-      new AuthActions.SignIn({
+      AuthActions.signIn({
         email: this.signInForm?.value.email,
         password: this.signInForm?.value.password,
       })

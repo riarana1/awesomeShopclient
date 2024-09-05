@@ -4,7 +4,7 @@ import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import * as fromApp from '../store/app.reducers';
 import { Store } from '@ngrx/store';
-import * as BrowseActions from '../store/browse/browse.actions';
+import { BrowseActions } from '../store/browse/browse.actions';
 import { Observable, Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 
@@ -59,10 +59,10 @@ export class BrowseComponent implements OnInit, OnDestroy {
       this.maxPrice = data.maxPrice;
 
       if (data.categories.length === 0) {
-        this.store.dispatch(new BrowseActions.FetchCategory());
+        this.store.dispatch(BrowseActions.fetchCategory());
       }
       if (!data.colors || data.colors.length === 0) {
-        this.store.dispatch(new BrowseActions.FetchColors());
+        this.store.dispatch(BrowseActions.fetchColors());
       }
       if (data.products.length === 0) {
         this.getProducts();
@@ -132,13 +132,15 @@ export class BrowseComponent implements OnInit, OnDestroy {
   getProducts() {
     this.selectedPage = 0;
     this.store.dispatch(
-      new BrowseActions.FetchProducts({
-        page: this.selectedPage,
-        sort: this.selectedSort,
-        category: this.selectedCategory,
-        color: this.selectedColor,
-        minPrice: this.minPrice,
-        maxPrice: this.maxPrice,
+      BrowseActions.fetchProducts({
+        payload: {
+          page: this.selectedPage,
+          sort: this.selectedSort,
+          category: this.selectedCategory,
+          color: this.selectedColor,
+          minPrice: this.minPrice,
+          maxPrice: this.maxPrice,
+        },
       })
     );
     this.getProductsCount();
@@ -147,24 +149,28 @@ export class BrowseComponent implements OnInit, OnDestroy {
 
   getProductsCount() {
     this.store.dispatch(
-      new BrowseActions.FetchProductsCount({
-        category: this.selectedCategory,
-        color: this.selectedColor,
-        minPrice: this.minPrice,
-        maxPrice: this.maxPrice,
+      BrowseActions.fetchProductsCount({
+        payload: {
+          category: this.selectedCategory,
+          color: this.selectedColor,
+          minPrice: this.minPrice,
+          maxPrice: this.maxPrice,
+        },
       })
     );
   }
 
   getProductsAppend() {
     this.store.dispatch(
-      new BrowseActions.FetchProductsAppend({
-        page: this.selectedPage,
-        sort: this.selectedSort,
-        category: this.selectedCategory,
-        color: this.selectedColor,
-        minPrice: this.minPrice,
-        maxPrice: this.maxPrice,
+      BrowseActions.fetchProductsAppend({
+        payload: {
+          page: this.selectedPage,
+          sort: this.selectedSort,
+          category: this.selectedCategory,
+          color: this.selectedColor,
+          minPrice: this.minPrice,
+          maxPrice: this.maxPrice,
+        },
       })
     );
     this.selectedPage++;

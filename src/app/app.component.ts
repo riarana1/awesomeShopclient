@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import * as AuthActions from './store/auth/auth.actions';
+import { AuthActions } from './store/auth/auth.actions';
 import { Store } from '@ngrx/store';
 import * as fromApp from './store/app.reducers';
 
@@ -12,7 +12,7 @@ export class AppComponent implements OnInit {
   constructor(private store: Store<fromApp.AppState>) {}
 
   ngOnInit(): void {
-    this.store.dispatch(new AuthActions.CheckIfLoggedIn());
+    this.store.dispatch(AuthActions.checkIfLoggedIn());
   }
 
   onActivate($event: any) {

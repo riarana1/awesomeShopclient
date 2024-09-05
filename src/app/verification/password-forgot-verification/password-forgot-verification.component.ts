@@ -7,7 +7,7 @@ import * as BlankValidators from '../../../utils//validators/blank.validator';
 import * as PasswordValidators from '../../../utils/validators/password.validator';
 import * as fromApp from '../../store/app.reducers';
 import { Store } from '@ngrx/store';
-import * as AuthActions from '../../store/auth/auth.actions';
+import { AuthActions } from '../../store/auth/auth.actions';
 import { catchError, filter, take } from 'rxjs/operators';
 
 @Component({
@@ -34,7 +34,7 @@ export class PasswordForgotVerificationComponent implements OnInit, OnDestroy {
       .select('auth')
       .pipe(filter((data) => data.authenticated))
       .subscribe((data) => {
-        this.store.dispatch(new AuthActions.SignOut());
+        this.store.dispatch(AuthActions.signOut());
       });
 
     this.forgotPasswordResetForm = new FormGroup({

@@ -10,7 +10,7 @@ import {
   Validators,
 } from '@angular/forms';
 import * as BlankValidators from '../../../../utils/validators/blank.validator';
-import * as AuthActions from '../../../store/auth/auth.actions';
+import { AuthActions } from '../../../store/auth/auth.actions';
 import { throwError } from 'rxjs';
 import { catchError, take } from 'rxjs/operators';
 
@@ -71,7 +71,7 @@ export class ResetDetailsComponent implements OnInit {
       .pipe(
         take(1),
         catchError((error) => {
-          this.store.dispatch(new AuthActions.SignOut());
+          this.store.dispatch(AuthActions.signOut());
           this.router.navigate(['/']);
           return throwError(error);
         })

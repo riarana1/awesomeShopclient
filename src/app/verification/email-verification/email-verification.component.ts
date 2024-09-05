@@ -4,7 +4,7 @@ import { AccountService } from '../../services/account.service';
 import { throwError } from 'rxjs';
 import * as fromApp from '../../store/app.reducers';
 import { Store } from '@ngrx/store';
-import * as AuthActions from '../../store/auth/auth.actions';
+import { AuthActions } from '../../store/auth/auth.actions';
 import { catchError, take } from 'rxjs/operators';
 
 @Component({
@@ -43,7 +43,7 @@ export class EmailVerificationComponent implements OnInit {
           .subscribe((data) => {
             if (data.authenticated) {
               this.isLoggedIn = true;
-              this.store.dispatch(new AuthActions.FetchVerificationStatus());
+              this.store.dispatch(AuthActions.fetchVerificationStatus());
             } else {
               this.isLoggedIn = false;
             }

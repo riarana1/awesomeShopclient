@@ -1,6 +1,7 @@
-import * as BrowseActions from './browse.actions';
+import { BrowseActions } from './browse.actions';
 import { HttpError } from '../model';
 import { Category, Colors, ProductVariantResponse } from '../model';
+import { createReducer, on } from '@ngrx/store';
 
 export interface BrowseState {
   products: Array<ProductVariantResponse>;
@@ -34,106 +35,88 @@ const initialState: BrowseState = {
   loading: false,
 };
 
-export function browseReducer(
-  state = initialState,
-  action: BrowseActions.BrowseActions
-) {
-  switch (action.type) {
-    case BrowseActions.FETCH_PRODUCTS_APPEND:
-    case BrowseActions.FETCH_PRODUCTS:
-      return {
-        ...state,
-        loading: true,
-      };
-
-    case BrowseActions.FETCH_PRODUCTS_SUCCESS:
-      return {
-        ...state,
-        selectedPage: action.payload.selectedPage,
-        selectedSort: action.payload.selectedSort,
-        selectedCategory: action.payload.selectedCategory,
-        selectedColor: action.payload.selectedColor,
-        minPrice: action.payload.minPrice,
-        maxPrice: action.payload.maxPrice,
-        products: action.payload.res,
-        canFetch: action.payload.res.length !== 0,
-        errors: [
-          ...state.errors.filter(
-            (error) => error.errorEffect !== action.payload.effect
-          ),
-        ],
-        loading: false,
-      };
-
-    case BrowseActions.FETCH_PRODUCTS_APPEND_SUCCESS:
-      return {
-        ...state,
-        selectedPage: action.payload.selectedPage,
-        selectedSort: action.payload.selectedSort,
-        selectedCategory: action.payload.selectedCategory,
-        selectedColor: action.payload.selectedColor,
-        minPrice: action.payload.minPrice,
-        maxPrice: action.payload.maxPrice,
-        products: [...state.products, ...action.payload.res],
-        canFetch: action.payload.res.length !== 0,
-        errors: [
-          ...state.errors.filter(
-            (error) => error.errorEffect !== action.payload.effect
-          ),
-        ],
-        loading: false,
-      };
-
-    case BrowseActions.FETCH_PRODUCTS_COUNT_SUCCESS:
-      return {
-        ...state,
-        productsCount: action.payload.res,
-        errors: [
-          ...state.errors.filter(
-            (error) => error.errorEffect !== action.payload.effect
-          ),
-        ],
-      };
-
-    case BrowseActions.FETCH_CATEGORY_SUCCESS:
-      return {
-        ...state,
-        categories: action.payload.res,
-        errors: [
-          ...state.errors.filter(
-            (error) => error.errorEffect !== action.payload.effect
-          ),
-        ],
-      };
-
-    case BrowseActions.FETCH_COLORS_SUCCESS:
-      return {
-        ...state,
-        colors: action.payload.res,
-        errors: [
-          ...state.errors.filter(
-            (error) => error.errorEffect !== action.payload.effect
-          ),
-        ],
-      };
-
-    case BrowseActions.BROWSE_ERROR:
-      const errors = [...state.errors];
-      const index = errors.findIndex(
-        (error) => error.errorEffect === action.payload.errorEffect
-      );
-      if (index !== -1) {
-        errors[index] = action.payload;
-      } else {
-        errors.push(action.payload);
-      }
-      return {
-        ...state,
-        loading: false,
-        errors,
-      };
-
-    default:
-      return state;
-  }
-}
+export const browseReducer = createReducer(
+  initialState,
+  on(
+    BrowseActions.fetchProductsAppend,
+    BrowseActions.fetchProducts,
+    (state) => ({
+      ...state,
+      loading: true,
+    })
+  ),
+  on(BrowseActions.fetchProductsSuccess, (state, { payload }) => ({
+    ...state,
+    selectedPage: payload.selectedPage,
+    selectedSort: payload.selectedSort,
+    selectedCategory: payload.selectedCategory,
+    selectedColor: payload.selectedColor,
+    minPrice: payload.minPrice,
+    maxPrice: payload.maxPrice,
+    products: payload.res,
+    canFetch: payload.res.length !== 0,
+    errors: [
+      ...state.errors.filter((error) => error.errorEffect !== payload.effect),
+    ],
+    loading: false,
+  })),
+  on(BrowseActions.fetchProductAppendSuccess, (state, { payload }) => ({
+    ...state,
+    selectedPage: payload.selectedPage,
+    selectedSort: payload.selectedSort,
+    selectedCategory: payload.selectedCategory,
+    selectedColor: payload.selectedColor,
+    minPrice: payload.minPrice,
+    maxPrice: payload.maxPrice,
+    products: [...state.products, ...payload.res],
+    canFetch: payload.res.length !== 0,
+    errors: [
+      ...state.errors.filter((error) => error.errorEffect !== payload.effect),
+    ],
+    loading: false,
+  })),
+  on(BrowseActions.fetchProductsCountSuccess, (state, { payload }) => ({
+    ...state,
+    productsCount: payload.res,
+    errors: [
+      ...state.errors.filter((error) => error.errorEffect !== payload.effect),
+    ],
+  })),
+  on(BrowseActions.fetchProductsCountSuccess, (state, { payload }) => ({
+    ...state,
+    productsCount: payload.res,
+    errors: [
+      ...state.errors.filter((error) => error.errorEffect !== payload.effect),
+    ],
+  })),
+  on(BrowseActions.fetchCategorySuccess, (state, { payload }) => ({
+    ...state,
+    categories: payload.category,
+    errors: [
+      ...state.errors.filter((error) => error.errorEffect !== payload.effect),
+    ],
+  })),
+  on(BrowseActions.fetchColorsSuccess, (state, { payload }) => ({
+    ...state,
+    colors: payload.res,
+    errors: [
+      ...state.errors.filter((error) => error.errorEffect !== payload.effect),
+    ],
+  })),
+  on(BrowseActions.browseError, (state, { browseError }) => {
+    const errors = [...state.errors];
+    const index = errors.findIndex(
+      (error) => error.errorEffect === browseError.errorEffect
+    );
+    if (index !== -1) {
+      errors[index] = browseError;
+    } else {
+      errors.push(browseError);
+    }
+    return {
+      ...state,
+      loading: false,
+      errors,
+    };
+  })
+);

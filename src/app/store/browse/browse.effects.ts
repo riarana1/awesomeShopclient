@@ -1,17 +1,27 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import * as BrowseActions from './browse.actions';
+import {
+  BrowseActions,
+  FETCH_CATEGORY,
+  FETCH_COLORS,
+  FETCH_PRODUCTS,
+  FETCH_PRODUCTS_APPEND,
+  FETCH_PRODUCTS_COUNT,
+} from './browse.actions';
 import { ProductService } from '../../services/product.service';
 import { of } from 'rxjs';
 import { catchError, map, mergeMap, switchMap } from 'rxjs/operators';
 
 @Injectable()
 export class BrowseEffects {
+  private actions$: Actions = inject(Actions);
+  private productService: ProductService = inject(ProductService);
+
   //@Effect()
   fetchProducts$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(BrowseActions.FETCH_PRODUCTS),
-      map((action: BrowseActions.FetchProducts) => {
+      ofType(BrowseActions.fetchProducts),
+      map((action) => {
         return action.payload;
       }),
       switchMap(
@@ -33,12 +43,11 @@ export class BrowseEffects {
               params.maxPrice
             )!
             .pipe(
-              map((res) => {
-                return {
-                  type: BrowseActions.FETCH_PRODUCTS_SUCCESS,
+              map((res) =>
+                BrowseActions.fetchProductsSuccess({
                   payload: {
                     res,
-                    effect: BrowseActions.FETCH_PRODUCTS,
+                    effect: FETCH_PRODUCTS,
                     selectedPage: params.page + 1,
                     selectedSort: params.sort,
                     selectedCategory: params.category,
@@ -46,13 +55,15 @@ export class BrowseEffects {
                     minPrice: params.minPrice,
                     maxPrice: params.maxPrice,
                   },
-                };
-              }),
+                })
+              ),
               catchError((error) =>
                 of(
-                  new BrowseActions.BrowseError({
-                    error,
-                    errorEffect: BrowseActions.FETCH_PRODUCTS,
+                  BrowseActions.browseError({
+                    browseError: {
+                      error,
+                      errorEffect: FETCH_PRODUCTS,
+                    },
                   })
                 )
               )
@@ -65,8 +76,8 @@ export class BrowseEffects {
   //@Effect()
   fetchProductsAppend$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(BrowseActions.FETCH_PRODUCTS_APPEND),
-      map((action: BrowseActions.FetchProductsAppend) => {
+      ofType(BrowseActions.fetchProductsAppend),
+      map((action) => {
         return action.payload;
       }),
       mergeMap(
@@ -88,12 +99,11 @@ export class BrowseEffects {
               params.maxPrice
             )!
             .pipe(
-              map((res) => {
-                return {
-                  type: BrowseActions.FETCH_PRODUCTS_APPEND_SUCCESS,
+              map((res) =>
+                BrowseActions.fetchProductAppendSuccess({
                   payload: {
                     res,
-                    effect: BrowseActions.FETCH_PRODUCTS_APPEND,
+                    effect: FETCH_PRODUCTS_APPEND,
                     selectedPage: params.page + 1,
                     selectedSort: params.sort,
                     selectedCategory: params.category,
@@ -101,13 +111,15 @@ export class BrowseEffects {
                     minPrice: params.minPrice,
                     maxPrice: params.maxPrice,
                   },
-                };
-              }),
+                })
+              ),
               catchError((error) =>
                 of(
-                  new BrowseActions.BrowseError({
-                    error,
-                    errorEffect: BrowseActions.FETCH_PRODUCTS_APPEND,
+                  BrowseActions.browseError({
+                    browseError: {
+                      error,
+                      errorEffect: FETCH_PRODUCTS_APPEND,
+                    },
                   })
                 )
               )
@@ -120,8 +132,8 @@ export class BrowseEffects {
   //@Effect()
   fetchProductsCount$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(BrowseActions.FETCH_PRODUCTS_COUNT),
-      map((action: BrowseActions.FetchProductsCount) => {
+      ofType(BrowseActions.fetchProductsCount),
+      map((action) => {
         return action.payload;
       }),
       switchMap(
@@ -139,20 +151,21 @@ export class BrowseEffects {
               params.maxPrice
             )
             .pipe(
-              map((res) => {
-                return {
-                  type: BrowseActions.FETCH_PRODUCTS_COUNT_SUCCESS,
+              map((res) =>
+                BrowseActions.fetchProductsCountSuccess({
                   payload: {
                     res,
-                    effect: BrowseActions.FETCH_PRODUCTS_COUNT,
+                    effect: FETCH_PRODUCTS_COUNT,
                   },
-                };
-              }),
+                })
+              ),
               catchError((error) =>
                 of(
-                  new BrowseActions.BrowseError({
-                    error,
-                    errorEffect: BrowseActions.FETCH_PRODUCTS_COUNT,
+                  BrowseActions.browseError({
+                    browseError: {
+                      error,
+                      errorEffect: FETCH_PRODUCTS_COUNT,
+                    },
                   })
                 )
               )
@@ -162,23 +175,21 @@ export class BrowseEffects {
     )
   );
 
-  //@Effect()
-  fetchCategory$ = createEffect(() =>
+  // @Effect()
+  fetchCategory = createEffect(() =>
     this.actions$.pipe(
-      ofType(BrowseActions.FETCH_CATEGORY),
-      switchMap((action: BrowseActions.FetchCategory) => {
+      ofType(BrowseActions.fetchCategory),
+      switchMap(() => {
         return this.productService.getCategory().pipe(
-          map((res) => {
-            return {
-              type: BrowseActions.FETCH_CATEGORY_SUCCESS,
-              payload: { res, effect: BrowseActions.FETCH_CATEGORY },
-            };
-          }),
+          map((category) =>
+            BrowseActions.fetchCategorySuccess({
+              payload: { category, effect: FETCH_CATEGORY },
+            })
+          ),
           catchError((error) =>
             of(
-              new BrowseActions.BrowseError({
-                error,
-                errorEffect: BrowseActions.FETCH_CATEGORY,
+              BrowseActions.browseError({
+                browseError: { error, errorEffect: FETCH_CATEGORY },
               })
             )
           )
@@ -190,20 +201,21 @@ export class BrowseEffects {
   //@Effect()
   fetchColor$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(BrowseActions.FETCH_COLORS),
-      switchMap((action: BrowseActions.FetchColors) => {
+      ofType(BrowseActions.fetchColors),
+      switchMap(() => {
         return this.productService.getColors().pipe(
-          map((res) => {
-            return {
-              type: BrowseActions.FETCH_COLORS_SUCCESS,
-              payload: { res, effect: BrowseActions.FETCH_COLORS },
-            };
-          }),
+          map((res) =>
+            BrowseActions.fetchColorsSuccess({
+              payload: { res, effect: FETCH_COLORS },
+            })
+          ),
           catchError((error) =>
             of(
-              new BrowseActions.BrowseError({
-                error,
-                errorEffect: BrowseActions.FETCH_COLORS,
+              BrowseActions.browseError({
+                browseError: {
+                  error,
+                  errorEffect: FETCH_COLORS,
+                },
               })
             )
           )
@@ -211,15 +223,4 @@ export class BrowseEffects {
       })
     )
   );
-
-  constructor(
-    private actions$: Actions,
-    private productService: ProductService
-  ) {}
-}
-function Effect(): (
-  target: BrowseEffects,
-  propertyKey: 'fetchProducts'
-) => void {
-  throw new Error('Function not implemented.');
 }

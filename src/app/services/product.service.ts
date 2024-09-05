@@ -1,11 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { config } from '../../config/local';
-import { ProductDetail, Product, ProductVariantResponse, Category, Colors } from '../store/model';
+import {
+  ProductDetail,
+  Product,
+  ProductVariantResponse,
+  Category,
+  Colors,
+} from '../store/model';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class ProductService {
-
   publicUrl = `${config.apiUrl}/api/public/product`;
   categoryUrl = `${config.apiUrl}/api/public/category`;
   colorUrl = `${config.apiUrl}/api/public/colors`;
@@ -13,10 +19,16 @@ export class ProductService {
   browsePageSize = 20;
   searchPageSize = 10;
 
-  constructor(private httpClient: HttpClient) {
-  }
+  constructor(private httpClient: HttpClient) {}
 
-  getProducts(page: number, sort: string, category: string, color: string, minPrice: string, maxPrice: string) {
+  getProducts(
+    page: number,
+    sort: string,
+    category: string,
+    color: string,
+    minPrice: string,
+    maxPrice: string
+  ) {
     if (page === undefined && page === null && page < 0) {
       return;
     }
@@ -42,13 +54,17 @@ export class ProductService {
       params = params.set('maxPrice', maxPrice);
     }
 
-    return this.httpClient.get<Object[]>(this.publicUrl,
-      {
-        params
-      });
+    return this.httpClient.get<ProductVariantResponse[]>(this.publicUrl, {
+      params,
+    });
   }
 
-  getProductsCount(category: string, color: string, minPrice: string, maxPrice: string) {
+  getProductsCount(
+    category: string,
+    color: string,
+    minPrice: string,
+    maxPrice: string
+  ) {
     let params = new HttpParams();
     if (category && category !== 'any') {
       params = params.set('category', category);
@@ -66,18 +82,21 @@ export class ProductService {
       params = params.set('maxPrice', maxPrice);
     }
 
-    return this.httpClient.get<number>(`${this.publicUrl}/count`,
-      {
-        params
-      });
+    return this.httpClient.get<number>(`${this.publicUrl}/count`, {
+      params,
+    });
   }
 
   getFullProduct(productUrl: string) {
-    return this.httpClient.get<ProductDetail>(`${this.publicUrl}/${productUrl}`);
+    return this.httpClient.get<ProductDetail>(
+      `${this.publicUrl}/${productUrl}`
+    );
   }
 
   getRelatedProducts(productUrl: string) {
-    return this.httpClient.get<Array<Product>>(`${this.publicUrl}/related/${productUrl}`);
+    return this.httpClient.get<Array<Product>>(
+      `${this.publicUrl}/related/${productUrl}`
+    );
   }
 
   getNewlyAdded() {
@@ -85,7 +104,9 @@ export class ProductService {
   }
 
   getMostSelling() {
-    return this.httpClient.get<Array<ProductVariantResponse>>(this.publicUrl + '/mostselling');
+    return this.httpClient.get<Array<ProductVariantResponse>>(
+      this.publicUrl + '/mostselling'
+    );
   }
 
   getInterested() {
@@ -98,7 +119,7 @@ export class ProductService {
     params = params.append('keyword', keyword);
     params = params.set('size', this.searchPageSize.toString());
     return this.httpClient.get<Array<Product>>(this.publicUrl + '/search', {
-      params
+      params,
     });
   }
 
@@ -109,5 +130,4 @@ export class ProductService {
   getColors() {
     return this.httpClient.get<Array<Colors>>(this.colorUrl);
   }
-
 }

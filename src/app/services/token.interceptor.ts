@@ -6,7 +6,7 @@ import {
 } from '@angular/common/http';
 import { Store } from '@ngrx/store';
 import * as fromApp from '../store/app.reducers';
-import * as AuthActions from '../store/auth/auth.actions';
+import { AuthActions } from '../store/auth/auth.actions';
 import { TokenService } from './token.service';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { Router } from '@angular/router';
@@ -44,7 +44,7 @@ export class TokenInterceptor implements HttpInterceptor {
             error.error.error === 'invalid_grant'
           ) {
             // If we get a 400 and the error message is 'invalid_grant', the token is no longer valid so logout.
-            this.store.dispatch(new AuthActions.SignOut());
+            this.store.dispatch(AuthActions.signOut());
           }
 
           if (
@@ -77,7 +77,7 @@ export class TokenInterceptor implements HttpInterceptor {
             if (newToken) {
               if (!this.tokenService.checkIfTokenExists()) {
                 // If user logs out while we are obtaining token
-                this.store.dispatch(new AuthActions.SignOut());
+                this.store.dispatch(AuthActions.signOut());
                 return of();
               }
               this.tokenService.saveToken(newToken);
@@ -85,12 +85,12 @@ export class TokenInterceptor implements HttpInterceptor {
               return next.handle(this.addTokenToHeader(request, newToken));
             }
 
-            this.store.dispatch(new AuthActions.SignOut());
+            this.store.dispatch(AuthActions.signOut());
             return of(); // if code gets here the effect that dispatches it becomes inactive.
           }),
           catchError(() => {
             this.router.navigate(['/login']);
-            return of(new AuthActions.SignOut());
+            return of(AuthActions.signOut());
           }),
           finalize(() => {
             this.isRefreshingToken = false;
@@ -104,7 +104,7 @@ export class TokenInterceptor implements HttpInterceptor {
           return next.handle(this.addTokenToHeader(request, newToken));
         }),
         catchError(() => {
-          this.store.dispatch(new AuthActions.SignOut());
+          this.store.dispatch(AuthActions.signOut());
           return of();
         })
       );

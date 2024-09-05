@@ -1,7 +1,7 @@
 import { AuthState } from './../../store/auth/auth.reducer';
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import * as AuthActions from '../../store/auth/auth.actions';
+import { AuthActions } from '../../store/auth/auth.actions';
 import { Store } from '@ngrx/store';
 import * as fromApp from '../../store/app.reducers';
 import { Observable } from 'rxjs';
@@ -48,7 +48,7 @@ export class SignupComponent implements OnInit {
 
   onSubmitted() {
     this.store.dispatch(
-      new AuthActions.SignUp({
+      AuthActions.signUp({
         email: this.signUpForm?.value.email,
         password: this.signUpForm?.value.passwordGroup.newPassword,
         passwordRepeat: this.signUpForm?.value.passwordGroup.newPasswordConfirm,

@@ -1,4 +1,4 @@
-import { Action } from '@ngrx/store';
+import { Action, createActionGroup, emptyProps, props } from '@ngrx/store';
 import { HttpError } from '../model';
 
 export const SIGN_UP = 'SIGN_UP';
@@ -13,67 +13,23 @@ export const FETCH_VERIFICATION_STATUS_SUCCESS =
   'FETCH_VERIFICATION_STATUS_SUCCESS';
 export const AUTH_ERROR = 'AUTH_ERROR';
 
-export class SignUp implements Action {
-  readonly type = SIGN_UP;
+export const AuthActions = createActionGroup({
+  source: 'Auth',
+  events: {
+    'Sign Up': props<{
+      email: string;
+      password: string;
+      passwordRepeat: string;
+    }>(),
+    'Sign Up Success': props<{ effect: string }>(),
+    'Sign In': props<{ email: string; password: string }>(),
+    'SignIn Success': props<{ effect: string }>(),
+    'Sign Out': emptyProps(),
+    'Sign Out Success': emptyProps(),
+    'Check If LoggedIn': emptyProps(),
+    'Fetch Verification Status': emptyProps(),
+    'Fetch Verification Status Success': props<{ status: boolean }>(),
 
-  constructor(
-    public payload: { email: string; password: string; passwordRepeat: string }
-  ) {}
-}
-
-export class SignUpSuccess implements Action {
-  readonly type = SIGN_UP_SUCCESS;
-
-  constructor(public payload: { effect: string }) {}
-}
-
-export class SignIn implements Action {
-  readonly type = SIGN_IN;
-
-  constructor(public payload: { email: string; password: string }) {}
-}
-
-export class SignInSuccess implements Action {
-  readonly type = SIGN_IN_SUCCESS;
-  constructor(public payload: { effect: string }) {}
-}
-
-export class SignOut implements Action {
-  readonly type = SIGN_OUT;
-}
-
-export class SignOutSuccess implements Action {
-  readonly type = SIGN_OUT_SUCCESS;
-}
-
-export class CheckIfLoggedIn implements Action {
-  readonly type = CHECK_IF_LOGGED_IN;
-}
-
-export class AuthError implements Action {
-  readonly type = AUTH_ERROR;
-
-  constructor(public payload: HttpError) {}
-}
-
-export class FetchVerificationStatus implements Action {
-  readonly type = FETCH_VERIFICATION_STATUS;
-}
-
-export class FetchVerificationStatusSuccess implements Action {
-  readonly type = FETCH_VERIFICATION_STATUS_SUCCESS;
-
-  constructor(public payload: boolean) {}
-}
-
-export type AuthActions =
-  | SignUp
-  | SignUpSuccess
-  | SignIn
-  | SignInSuccess
-  | SignOut
-  | SignOutSuccess
-  | CheckIfLoggedIn
-  | FetchVerificationStatus
-  | FetchVerificationStatusSuccess
-  | AuthError;
+    AuthError: props<{ authError: HttpError }>(),
+  },
+});

@@ -5,7 +5,7 @@ import { Store } from '@ngrx/store';
 import * as fromApp from '../store/app.reducers';
 import { CartActions } from '../store/cart/cart.actions';
 import { OrderActions } from '../store/order/order.actions';
-import * as AuthActions from '../store/auth/auth.actions';
+import { AuthActions } from '../store/auth/auth.actions';
 import { Observable, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbDropdownConfig } from '@ng-bootstrap/ng-bootstrap';
@@ -71,7 +71,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   userSignOut() {
-    this.store.dispatch(new AuthActions.SignOut());
+    this.store.dispatch(AuthActions.signOut());
     this.router.navigate(['/']);
   }
 

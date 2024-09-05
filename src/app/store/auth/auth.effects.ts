@@ -1,10 +1,16 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Router } from '@angular/router';
-import * as AuthActions from './auth.actions';
-import * as CartActions from '../cart/cart.actions';
-import * as OrderActions from '../order/order.actions';
-import * as ShowcaseActions from '../showcase/showcase.actions';
+import {
+  AuthActions,
+  SIGN_IN,
+  SIGN_IN_SUCCESS,
+  SIGN_OUT,
+  SIGN_UP,
+} from './auth.actions';
+import { CartActions } from '../cart/cart.actions';
+import { ShowcaseActions } from '../showcase/showcase.actions';
+import { OrderActions } from '../order/order.actions';
 import { TokenService } from '../../services/token.service';
 import { AccountService } from '../../services/account.service';
 import { of } from 'rxjs';
@@ -12,12 +18,17 @@ import { catchError, concatMap, map, switchMap } from 'rxjs/operators';
 
 @Injectable()
 export class AuthEffects {
+  private actions$: Actions = inject(Actions);
+  private router: Router = inject(Router);
+  private tokenService: TokenService = inject(TokenService);
+  private accountService: AccountService = inject(AccountService);
+
   //@Effect()
   signUp$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(AuthActions.SIGN_UP),
-      map((action: AuthActions.SignUp) => {
-        return action.payload;
+      ofType(AuthActions.signUp),
+      map((action) => {
+        return action;
       }),
       switchMap(
         (credentials: {
@@ -34,24 +45,20 @@ export class AuthEffects {
             .pipe(
               switchMap((res) => {
                 return [
-                  {
-                    type: AuthActions.SIGN_UP_SUCCESS,
-                    payload: { effect: AuthActions.SIGN_UP },
-                  },
-                  {
-                    type: AuthActions.SIGN_IN, // automatic sign in
-                    payload: {
-                      email: credentials.email,
-                      password: credentials.password,
-                    },
-                  },
+                  AuthActions.signUpSuccess({ effect: SIGN_UP }),
+                  AuthActions.signIn({
+                    email: credentials.email,
+                    password: credentials.password,
+                  }), // automatic sign in
                 ];
               }),
               catchError((error) =>
                 of(
-                  new AuthActions.AuthError({
-                    error,
-                    errorEffect: AuthActions.SIGN_UP,
+                  AuthActions.authError({
+                    authError: {
+                      error,
+                      errorEffect: SIGN_UP,
+                    },
                   })
                 )
               )
@@ -64,9 +71,9 @@ export class AuthEffects {
   //@Effect()
   signIn$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(AuthActions.SIGN_IN),
-      map((action: AuthActions.SignIn) => {
-        return action.payload;
+      ofType(AuthActions.signIn),
+      map((action) => {
+        return action;
       }),
       switchMap(
         (credentials: {
@@ -81,18 +88,17 @@ export class AuthEffects {
                 this.tokenService.saveToken(res);
                 this.router.navigate(['/']);
                 return [
-                  {
-                    type: AuthActions.SIGN_IN_SUCCESS,
-                    payload: { effect: AuthActions.SIGN_IN },
-                  },
-                  { type: AuthActions.FETCH_VERIFICATION_STATUS },
+                  AuthActions.signInSuccess({ effect: SIGN_IN }),
+                  AuthActions.fetchVerificationStatus(),
                 ];
               }),
               catchError((error) =>
                 of(
-                  new AuthActions.AuthError({
-                    error,
-                    errorEffect: AuthActions.SIGN_IN,
+                  AuthActions.authError({
+                    authError: {
+                      error,
+                      errorEffect: SIGN_IN,
+                    },
                   })
                 )
               )
@@ -105,22 +111,14 @@ export class AuthEffects {
   //@Effect()
   signOut = createEffect(() =>
     this.actions$.pipe(
-      ofType(AuthActions.SIGN_OUT),
-      concatMap((action: AuthActions.SignOut) => {
+      ofType(AuthActions.signOut),
+      concatMap((action) => {
         this.tokenService.removeToken();
         return [
-          {
-            type: AuthActions.SIGN_OUT_SUCCESS,
-          },
-          {
-            type: CartActions.EMPTY_CART_SUCCESS, // clearing memory
-          },
-          {
-            type: OrderActions.EMPTY_ORDER, // clearing memory
-          },
-          {
-            type: ShowcaseActions.EMPTY_INTERESTED, // clearing memory
-          },
+          AuthActions.signOutSuccess(),
+          CartActions.emptyCartSuccess(), // clearing memory
+          OrderActions.emptyOrder(), // clearing memory
+          ShowcaseActions.emptyInterested(), // clearing memory
         ];
       })
     )
@@ -129,25 +127,15 @@ export class AuthEffects {
   //@Effect()
   checkIfLoggedIn$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(AuthActions.CHECK_IF_LOGGED_IN),
-      switchMap((action: AuthActions.CheckIfLoggedIn) => {
+      ofType(AuthActions.checkIfLoggedIn),
+      switchMap(() => {
         if (this.tokenService.checkIfTokenExists()) {
           return [
-            {
-              type: AuthActions.SIGN_IN_SUCCESS,
-              payload: { effect: AuthActions.SIGN_IN_SUCCESS },
-            },
-            {
-              type: AuthActions.FETCH_VERIFICATION_STATUS,
-            },
+            AuthActions.signInSuccess({ effect: SIGN_IN_SUCCESS }),
+            AuthActions.fetchVerificationStatus(),
           ];
         }
-        return [
-          {
-            type: AuthActions.SIGN_OUT_SUCCESS,
-            payload: { effect: AuthActions.SIGN_OUT },
-          },
-        ];
+        return [AuthActions.signOutSuccess()];
       })
     )
   );
@@ -155,25 +143,15 @@ export class AuthEffects {
   //@Effect()
   fetchVerificationStatus$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(AuthActions.FETCH_VERIFICATION_STATUS),
-      switchMap((action: AuthActions.FetchVerificationStatus) => {
+      ofType(AuthActions.fetchVerificationStatus),
+      switchMap(() => {
         return this.accountService.getVerificationStatus().pipe(
-          map((res) => {
-            return {
-              type: AuthActions.FETCH_VERIFICATION_STATUS_SUCCESS,
-              payload: res,
-            };
-          }),
-          catchError((error) => of(new AuthActions.SignOut()))
+          map((res) =>
+            AuthActions.fetchVerificationStatusSuccess({ status: res })
+          ),
+          catchError((error) => of(AuthActions.signOut()))
         );
       })
     )
   );
-
-  constructor(
-    private actions$: Actions,
-    private tokenService: TokenService,
-    private router: Router,
-    private accountService: AccountService
-  ) {}
 }
